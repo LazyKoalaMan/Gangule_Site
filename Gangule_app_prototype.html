@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Linguage - Mobile AI Language Companion</title>
+  
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            stitch: {
+              50: '#f0f3ff',
+              100: '#e1e7fe',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              900: '#1e1b4b',
+              950: '#0f0e26',
+            },
+            accent: {
+              emerald: '#10b981',
+              amber: '#f59e0b',
+              rose: '#f43f5e',
+            }
+          },
+          animation: {
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'wave-bar': 'wave 1.2s ease-in-out infinite',
+          },
+          keyframes: {
+            wave: {
+              '0%, 100%': { transform: 'scaleY(0.3)' },
+              '50%': { transform: 'scaleY(1.0)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(99, 102, 241, 0.4);
+      border-radius: 9999px;
+    }
+
+    /* Card Flip 3D Styles */
+    .perspective-1000 {
+      perspective: 1000px;
+    }
+    .transform-style-3d {
+      transform-style: preserve-3d;
+    }
+    .backface-hidden {
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+    .rotate-y-180 {
+      transform: rotateY(180deg);
+    }
+  </style>
+</head>
+<body class="h-full flex items-center justify-center bg-slate-950 font-sans p-0 sm:p-4 overflow-hidden select-none">
+
+  <div id="app" class="w-full h-full sm:max-w-[410px] sm:h-[840px] bg-slate-900 sm:rounded-[40px] border-0 sm:border-[8px] border-slate-800 shadow-2xl flex flex-col relative overflow-hidden ring-1 ring-slate-800/60">
+    
+    <!-- Top Mobile Notch Bar (Visible on desktop view) -->
+    <div class="hidden sm:flex justify-between items-center px-6 pt-3 pb-1 text-xs text-slate-400 select-none z-30">
+      <span id="current-time">09:41</span>
+      <div class="w-20 h-4 bg-slate-950 rounded-full mx-auto -mt-1 flex items-center justify-center">
+        <div class="w-2 h-2 rounded-full bg-slate-800 mr-2"></div>
+        <div class="w-8 h-1 rounded-full bg-slate-800"></div>
+      </div>
+      <div class="flex items-center space-x-1.5">
+        <i data-lucide="wifi" class="w-3.5 h-3.5"></i>
+        <i data-lucide="battery" class="w-4 h-4"></i>
+      </div>
+    </div>
+
+    <!-- Header Section -->
+    <header class="px-4 py-3 bg-slate-900/90 backdrop-blur-md border-b border-slate-800/80 flex items-center justify-between z-20">
+      
+      <!-- App Brand & Language Dropdown -->
+      <div class="flex items-center space-x-2">
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-stitch-600 to-indigo-400 flex items-center justify-center shadow-lg shadow-stitch-500/20 text-white font-bold text-sm">
+          L
+        </div>
+        <div class="relative">
+          <button id="lang-menu-btn" onclick="toggleLangDropdown()" class="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 text-xs font-semibold text-slate-200 transition-all">
+            <span id="active-flag">🇪🇸</span>
+            <span id="active-lang-name">Spanish</span>
+            <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
+          </button>
+
+          <!-- Language Selector Dropdown -->
+          <div id="lang-dropdown" class="hidden absolute left-0 mt-2 w-40 bg-slate-900 border border-slate-700 rounded-xl shadow-xl py-1.5 z-50 divide-y divide-slate-800">
+            <div class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Learning Language</div>
+            <button onclick="selectLanguage('es', 'Spanish', '🇪🇸', 'Elena')" class="w-full flex items-center space-x-2 px-3 py-2 text-xs text-left text-slate-200 hover:bg-stitch-600/20 hover:text-stitch-100 transition-colors">
+              <span>🇪🇸</span> <span class="flex-1">Spanish</span>
+            </button>
+            <button onclick="selectLanguage('ja', 'Japanese', '🇯🇵', 'Kenji')" class="w-full flex items-center space-x-2 px-3 py-2 text-xs text-left text-slate-200 hover:bg-stitch-600/20 hover:text-stitch-100 transition-colors">
+              <span>🇯🇵</span> <span class="flex-1">Japanese</span>
+            </button>
+            <button onclick="selectLanguage('fr', 'French', '🇫🇷', 'Camille')" class="w-full flex items-center space-x-2 px-3 py-2 text-xs text-left text-slate-200 hover:bg-stitch-600/20 hover:text-stitch-100 transition-colors">
+              <span>🇫🇷</span> <span class="flex-1">French</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Streak & Mastered Count Badges -->
+      <div class="flex items-center space-x-2">
+        <div class="flex items-center space-x-1 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-semibold" title="Daily Streak">
+          <i data-lucide="flame" class="w-3.5 h-3.5 fill-amber-400"></i>
+          <span id="streak-count">7</span>
+        </div>
+        <div class="flex items-center space-x-1 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold" title="Mastered Words">
+          <i data-lucide="award" class="w-3.5 h-3.5"></i>
+          <span id="words-mastered">24</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Dynamic Content Views Area -->
+    <main id="main-container" class="flex-1 relative overflow-hidden bg-slate-950">
+      
+      <!-- ================= 1. FLASHCARDS SCREEN ================= -->
+      <section id="view-flashcards" class="h-full flex flex-col justify-between p-4 overflow-y-auto">
+        <!-- Progress Bar -->
+        <div class="w-full space-y-1.5 mb-2">
+          <div class="flex justify-between text-xs text-slate-400 font-medium">
+            <span>Daily Review Progress</span>
+            <span id="card-progress-num">1 / 5</span>
+          </div>
+          <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+            <div id="card-progress-bar" class="bg-gradient-to-r from-stitch-500 to-indigo-400 h-full w-[20%] transition-all duration-300"></div>
+          </div>
+        </div>
+
+        <!-- Flip Container -->
+        <div class="flex-1 flex items-center justify-center my-auto perspective-1000 py-4">
+          <div id="flashcard" onclick="flipCard()" class="w-full h-80 relative transform-style-3d transition-transform duration-500 cursor-pointer">
+            
+            <!-- Card Front -->
+            <div class="absolute inset-0 w-full h-full bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700/70 rounded-3xl p-6 flex flex-col justify-between shadow-xl backface-hidden">
+              <div class="flex justify-between items-center text-xs text-slate-400">
+                <span class="px-2.5 py-1 rounded-md bg-slate-800 border border-slate-700/50 uppercase tracking-wider text-[10px] font-bold text-stitch-500">Target Word</span>
+                <button onclick="event.stopPropagation(); playAudioPrompt();" class="p-2 rounded-full bg-stitch-600/20 hover:bg-stitch-600/40 text-stitch-100 transition-colors">
+                  <i data-lucide="volume-2" class="w-4 h-4"></i>
+                </button>
+              </div>
+              <div class="text-center my-auto space-y-2">
+                <h2 id="card-word" class="text-3xl font-bold text-slate-50 tracking-wide">Desarrollar</h2>
+                <p id="card-phonetic" class="text-xs text-slate-400 font-mono">[de-sa-rro-llar]</p>
+              </div>
+              <div class="text-center text-xs text-slate-400 flex items-center justify-center space-x-1">
+                <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i>
+                <span>Tap card to reveal meaning</span>
+              </div>
+            </div>
+
+            <!-- Card Back -->
+            <div class="absolute inset-0 w-full h-full bg-gradient-to-br from-slate-900 to-stitch-950 border border-stitch-500/40 rounded-3xl p-6 flex flex-col justify-between shadow-xl backface-hidden rotate-y-180">
+              <div class="flex justify-between items-center text-xs text-slate-400">
+                <span class="px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/20 uppercase tracking-wider text-[10px] font-bold text-emerald-400">Translation</span>
+                <span id="card-box-badge" class="px-2 py-0.5 rounded bg-slate-800 text-[10px] text-slate-400">Leitner Box 1</span>
+              </div>
+              <div class="text-center my-auto space-y-3">
+                <h3 id="card-translation" class="text-2xl font-bold text-stitch-100">To develop / expand</h3>
+                <p id="card-example" class="text-xs text-slate-300 italic max-w-xs mx-auto bg-slate-800/50 p-2.5 rounded-xl border border-slate-700/40">
+                  "Queremos desarrollar una app móvil increíble."
+                </p>
+              </div>
+              <div class="text-center text-[11px] text-slate-400">
+                Choose difficulty to schedule review
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Leitner System Rating Buttons -->
+        <div class="space-y-2">
+          <div class="grid grid-cols-3 gap-2">
+            <button onclick="rateCard('hard')" class="py-3 px-2 rounded-xl bg-slate-800 hover:bg-rose-500/20 border border-slate-700/70 hover:border-rose-500/40 text-rose-400 flex flex-col items-center justify-center space-y-1 transition-all active:scale-95">
+              <i data-lucide="frown" class="w-4 h-4"></i>
+              <span class="text-xs font-semibold">Hard</span>
+              <span class="text-[9px] text-slate-400">1 Day</span>
+            </button>
+            <button onclick="rateCard('good')" class="py-3 px-2 rounded-xl bg-slate-800 hover:bg-amber-500/20 border border-slate-700/70 hover:border-amber-500/40 text-amber-400 flex flex-col items-center justify-center space-y-1 transition-all active:scale-95">
+              <i data-lucide="meh" class="w-4 h-4"></i>
+              <span class="text-xs font-semibold">Good</span>
+              <span class="text-[9px] text-slate-400">3 Days</span>
+            </button>
+            <button onclick="rateCard('easy')" class="py-3 px-2 rounded-xl bg-slate-800 hover:bg-emerald-500/20 border border-slate-700/70 hover:border-emerald-500/40 text-emerald-400 flex flex-col items-center justify-center space-y-1 transition-all active:scale-95">
+              <i data-lucide="smile" class="w-4 h-4"></i>
+              <span class="text-xs font-semibold">Easy</span>
+              <span class="text-[9px] text-slate-400">7 Days</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 2. VOICE COMPANION ROOM ================= -->
+      <section id="view-voice" class="hidden h-full flex flex-col justify-between p-4">
+        
+        <!-- Companion Status Header -->
+        <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm">
+          <div class="flex items-center space-x-3">
+            <div class="relative">
+              <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-stitch-600 to-indigo-400 flex items-center justify-center text-white font-bold text-sm">
+                <span id="companion-avatar-initial">E</span>
+              </div>
+              <span class="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-slate-900"></span>
+            </div>
+            <div>
+              <div class="flex items-center space-x-1.5">
+                <h3 id="companion-name" class="text-xs font-bold text-slate-100">Elena (AI Companion)</h3>
+                <span class="px-1.5 py-0.2 rounded bg-stitch-500/20 text-stitch-300 text-[9px] font-semibold">A2 Level</span>
+              </div>
+              <p id="companion-status" class="text-[10px] text-slate-400">Ready to speak</p>
+            </div>
+          </div>
+          <button onclick="clearVoiceChat()" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 transition-colors">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+
+        <!-- Chat / Subtitle Transcript Area -->
+        <div id="chat-stream-box" class="flex-1 my-3 overflow-y-auto space-y-3 pr-1">
+          <!-- Initial Welcome Message -->
+          <div class="flex flex-col space-y-1">
+            <div class="max-w-[85%] self-start p-3 rounded-2xl rounded-tl-sm bg-slate-800 border border-slate-700/60 text-xs text-slate-200 leading-relaxed shadow-sm">
+              <span id="welcome-message-text">¡Hola! Soy Elena, tu compañera de idiomas. ¿De qué te gustaría hablar hoy?</span>
+            </div>
+            <span class="text-[9px] text-slate-400 self-start px-1">Subtitles • Target Language</span>
+          </div>
+        </div>
+
+        <!-- Waveform Visualizer & Recording Controls -->
+        <div class="bg-slate-900/90 border border-slate-800/80 rounded-2xl p-4 flex flex-col items-center justify-center space-y-4 shadow-xl">
+          
+          <!-- Animated Audio Waveform -->
+          <div id="audio-waveform" class="flex items-center justify-center space-x-1 h-8 opacity-40 transition-opacity duration-300">
+            <div class="w-1 bg-stitch-500 rounded-full h-3 animate-wave-bar" style="animation-delay: 0.1s"></div>
+            <div class="w-1 bg-stitch-500 rounded-full h-6 animate-wave-bar" style="animation-delay: 0.2s"></div>
+            <div class="w-1 bg-indigo-400 rounded-full h-8 animate-wave-bar" style="animation-delay: 0.3s"></div>
+            <div class="w-1 bg-stitch-500 rounded-full h-5 animate-wave-bar" style="animation-delay: 0.4s"></div>
+            <div class="w-1 bg-indigo-400 rounded-full h-2 animate-wave-bar" style="animation-delay: 0.5s"></div>
+          </div>
+
+          <!-- Push to Talk Mic Button -->
+          <div class="relative flex items-center justify-center">
+            <div id="mic-pulse" class="hidden absolute w-20 h-20 rounded-full bg-stitch-500/20 animate-ping"></div>
+            <button id="mic-btn" onmousedown="startMicRecording()" onmouseup="stopMicRecording()" ontouchstart="startMicRecording()" ontouchend="stopMicRecording()" class="relative z-10 w-16 h-16 rounded-full bg-gradient-to-tr from-stitch-600 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-stitch-500/30 active:scale-95 transition-all">
+              <i id="mic-icon" data-lucide="mic" class="w-7 h-7"></i>
+            </button>
+          </div>
+          <p id="mic-instruction" class="text-[11px] text-slate-400 font-medium">Hold button to speak with AI</p>
+        </div>
+      </section>
+
+      <!-- ================= 3. JOURNAL & GRAMMAR CHECKER ================= -->
+      <section id="view-journal" class="hidden h-full flex flex-col p-4 space-y-3 overflow-y-auto">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-sm font-bold text-slate-100">Target Language Journal</h2>
+            <p class="text-[11px] text-slate-400">Write freely to practice sentence construction</p>
+          </div>
+          <button onclick="runGrammarCheck()" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-stitch-600 hover:bg-stitch-500 text-white text-xs font-semibold shadow-md shadow-stitch-600/20 transition-all active:scale-95">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+            <span>Check Grammar</span>
+          </button>
+        </div>
+
+        <!-- Journal Text Area -->
+        <div class="flex-1 flex flex-col space-y-2">
+          <input id="journal-title" type="text" placeholder="Entry Title (e.g., Mi Fin de Semana)..." class="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-100 focus:outline-none focus:border-stitch-500 placeholder-slate-500">
+          
+          <textarea id="journal-input" placeholder="Escribe aquí en tu idioma meta..." class="w-full flex-1 p-3 bg-slate-900 border border-slate-800 rounded-2xl text-xs text-slate-200 focus:outline-none focus:border-stitch-500 placeholder-slate-500 leading-relaxed resize-none"></textarea>
+        </div>
+
+        <!-- AI Grammar Feedback Drawer -->
+        <div id="journal-feedback-panel" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-3 space-y-2">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+            <div class="flex items-center space-x-1.5 text-xs font-bold text-emerald-400">
+              <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
+              <span>AI Grammar Analysis</span>
+            </div>
+            <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full font-semibold">Natural Score: 92%</span>
+          </div>
+          <div id="grammar-corrections-list" class="text-xs text-slate-300 space-y-1.5 leading-relaxed">
+            <!-- Dynamic feedback populates here -->
+          </div>
+          <div class="pt-1 flex items-center justify-between text-[11px]">
+            <span class="text-slate-400">Detected Key Vocabulary:</span>
+            <button onclick="extractAndSaveJournalWords()" class="text-stitch-400 hover:text-stitch-300 font-semibold flex items-center space-x-1">
+              <i data-lucide="plus-circle" class="w-3 h-3"></i>
+              <span>Save Words to Bank</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 4. WORD BANK / DICTIONARY ================= -->
+      <section id="view-wordbank" class="hidden h-full flex flex-col p-4 space-y-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-sm font-bold text-slate-100">Vocabulary Bank</h2>
+            <p class="text-[11px] text-slate-400">Words tracked in your active SRS algorithm</p>
+          </div>
+          <button onclick="openAddWordModal()" class="p-2 rounded-xl bg-stitch-600 hover:bg-stitch-500 text-white shadow-md transition-all active:scale-95">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <!-- Search Bar & Filters -->
+        <div class="relative">
+          <i data-lucide="search" class="w-3.5 h-3.5 text-slate-500 absolute left-3 top-3"></i>
+          <input id="word-search" type="text" oninput="filterWordBank()" placeholder="Search target words or meanings..." class="w-full pl-8 pr-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-100 focus:outline-none focus:border-stitch-500 placeholder-slate-500">
+        </div>
+
+        <!-- Word List -->
+        <div id="word-list-container" class="flex-1 overflow-y-auto space-y-2 pr-1">
+          <!-- Dynamic word items inserted via JS -->
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="bg-slate-900/95 backdrop-blur-md border-t border-slate-800/80 px-2 py-2 flex items-center justify-around z-20">
+      <button id="nav-flashcards" onclick="switchTab('flashcards')" class="flex flex-col items-center space-y-1 p-1.5 rounded-xl text-stitch-500 font-medium transition-colors">
+        <i data-lucide="layers" class="w-5 h-5"></i>
+        <span class="text-[10px]">Cards</span>
+      </button>
+      
+      <button id="nav-voice" onclick="switchTab('voice')" class="flex flex-col items-center space-y-1 p-1.5 rounded-xl text-slate-400 hover:text-slate-200 font-medium transition-colors">
+        <i data-lucide="mic" class="w-5 h-5"></i>
+        <span class="text-[10px]">Voice AI</span>
+      </button>
+      
+      <button id="nav-journal" onclick="switchTab('journal')" class="flex flex-col items-center space-y-1 p-1.5 rounded-xl text-slate-400 hover:text-slate-200 font-medium transition-colors">
+        <i data-lucide="book-open" class="w-5 h-5"></i>
+        <span class="text-[10px]">Journal</span>
+      </button>
+      
+      <button id="nav-wordbank" onclick="switchTab('wordbank')" class="flex flex-col items-center space-y-1 p-1.5 rounded-xl text-slate-400 hover:text-slate-200 font-medium transition-colors">
+        <i data-lucide="bookmark" class="w-5 h-5"></i>
+        <span class="text-[10px]">Word Bank</span>
+      </button>
+    </nav>
+
+    <!-- Quick Add Word Modal Overlay -->
+    <div id="add-word-modal" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="w-full bg-slate-900 border border-slate-800 rounded-3xl p-5 space-y-4 shadow-2xl">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+          <h3 class="text-xs font-bold text-slate-100">Add Word to <span id="modal-lang-label">Spanish</span> Bank</h3>
+          <button onclick="closeAddWordModal()" class="text-slate-400 hover:text-slate-200">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+        <div class="space-y-3">
+          <div>
+            <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">Target Word</label>
+            <input id="new-word-input" type="text" placeholder="e.g., Cosecha" class="w-full px-3 py-2 bg-slate-800 border border-slate-700/80 rounded-xl text-xs text-slate-100 focus:outline-none focus:border-stitch-500">
+          </div>
+          <div>
+            <label class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">Translation / Meaning</label>
+            <input id="new-translation-input" type="text" placeholder="e.g., Harvest / Crop" class="w-full px-3 py-2 bg-slate-800 border border-slate-700/80 rounded-xl text-xs text-slate-100 focus:outline-none focus:border-stitch-500">
+          </div>
+        </div>
+        <button onclick="saveNewWord()" class="w-full py-2.5 bg-stitch-600 hover:bg-stitch-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-stitch-600/20 transition-all">
+          Save Word
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- JavaScript Core Logic -->
+  <script>
+    // --- APP STATE & MOCK DATABASE ---
+    let currentLang = 'es';
+    let currentTab = 'flashcards';
+    let isFlipped = false;
+    let currentCardIndex = 0;
+    let streakCount = 7;
+
+    const mockVocab = {
+      es: [
+        { id: 'es-1', word: 'Desarrollar', phonetic: '[de-sa-rro-llar]', translation: 'To develop / expand', example: 'Queremos desarrollar una app móvil increíble.', box: 1 },
+        { id: 'es-2', word: 'Lograr', phonetic: '[lo-grar]', translation: 'To achieve / attain', example: 'Con práctica diaria vas a lograr la fluidez.', box: 2 },
+        { id: 'es-3', word: 'Desafío', phonetic: '[de-sa-fí-o]', translation: 'Challenge / Obstacle', example: 'Aprender vocabulario es un gran desafío.', box: 1 },
+        { id: 'es-4', word: 'Imprescindible', phonetic: '[im-pres-cin-di-ble]', translation: 'Essential / Indispensable', example: 'La constancia es imprescindible.', box: 3 },
+        { id: 'es-5', word: 'Sugerencia', phonetic: '[su-ge-ren-cia]', translation: 'Suggestion / Hint', example: '¿Tienes alguna sugerencia para mí?', box: 2 }
+      ],
+      ja: [
+        { id: 'ja-1', word: '開発する (Kaihatsu suru)', phonetic: '[kai-ha-tsu]', translation: 'To develop', example: '素晴らしいアプリを開発したいです。', box: 1 },
+        { id: 'ja-2', word: '挑戦 (Chousen)', phonetic: '[chou-sen]', translation: 'Challenge', example: '新しい言語の習得は挑戦です。', box: 2 },
+        { id: 'ja-3', word: '習慣 (Shuukan)', phonetic: '[shuu-kan]', translation: 'Habit / Custom', example: '毎日勉強する習慣をつけます。', box: 1 }
+      ],
+      fr: [
+        { id: 'fr-1', word: 'Développer', phonetic: '[de-vlo-per]', translation: 'To develop', example: 'Nous voulons développer une application.', box: 1 },
+        { id: 'fr-2', word: 'Réussir', phonetic: '[re-u-ssir]', translation: 'To succeed / pass', example: 'Vous allez réussir à parler couramment.', box: 2 }
+      ]
+    };
+
+    const companionVoices = {
+      es: { name: 'Elena (AI Tutor)', initial: 'E', welcome: '¡Hola! Soy Elena, tu compañera de idiomas. ¿De qué te gustaría hablar hoy?', replies: ['¡Muy bien dicho! Tu pronunciación suena bastante natural.', 'Interesante punto. ¿Puedes contarme más usando palabras que aprendiste en las tarjetas?'] },
+      ja: { name: 'Kenji (AI Tutor)', initial: 'K', welcome: 'こんにちは！ケンジです。今日はどんなことについて話しましょうか？', replies: ['素晴らしい表現ですね！その調子で続けましょう。', 'なるほど！もう一度ゆっくり話してみてください。'] },
+      fr: { name: 'Camille (AI Tutor)', initial: 'C', welcome: 'Bonjour! Je suis Camille. De quoi aimeriez-vous parler aujourd\'hui?', replies: ['C\'est parfait! Votre accent s\'améliore beaucoup.', 'Très bien! Essayons d\'utiliser de nouveaux mots.'] }
+    };
+
+    // --- INITIALIZATION ---
+    window.onload = function() {
+      lucide.createIcons();
+      updateHeaderBadges();
+      renderCurrentFlashcard();
+      renderWordBank();
+      
+      // Realtime clock simulator for notch
+      const now = new Date();
+      document.getElementById('current-time').innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+    };
+
+    // --- LANGUAGE SWITCHER LOGIC ---
+    function toggleLangDropdown() {
+      const dropdown = document.getElementById('lang-dropdown');
+      dropdown.classList.toggle('hidden');
+    }
+
+    function selectLanguage(code, name, flag, companionName) {
+      currentLang = code;
+      document.getElementById('active-flag').innerText = flag;
+      document.getElementById('active-lang-name').innerText = name;
+      document.getElementById('modal-lang-label').innerText = name;
+      document.getElementById('lang-dropdown').classList.add('hidden');
+
+      // Update Companion Persona
+      const persona = companionVoices[code];
+      document.getElementById('companion-name').innerText = persona.name;
+      document.getElementById('companion-avatar-initial').innerText = persona.initial;
+      document.getElementById('welcome-message-text').innerText = persona.welcome;
+
+      // Reset Card and Wordbank views
+      currentCardIndex = 0;
+      isFlipped = false;
+      renderCurrentFlashcard();
+      renderWordBank();
+      updateHeaderBadges();
+    }
+
+    // --- FLASHCARD & LEITNER LOGIC ---
+    function renderCurrentFlashcard() {
+      const cards = mockVocab[currentLang] || [];
+      if (cards.length === 0) return;
+
+      const card = cards[currentCardIndex % cards.length];
+      const cardElem = document.getElementById('flashcard');
+      
+      // Ensure flipped back to front on render
+      if (isFlipped) {
+        cardElem.classList.remove('rotate-y-180');
+        isFlipped = false;
+      }
+
+      document.getElementById('card-word').innerText = card.word;
+      document.getElementById('card-phonetic').innerText = card.phonetic;
+      document.getElementById('card-translation').innerText = card.translation;
+      document.getElementById('card-example').innerText = `"${card.example}"`;
+      document.getElementById('card-box-badge').innerText = `Leitner Box ${card.box}`;
+
+      // Update progress bar
+      const currentNum = (currentCardIndex % cards.length) + 1;
+      document.getElementById('card-progress-num').innerText = `${currentNum} / ${cards.length}`;
+      document.getElementById('card-progress-bar').style.width = `${(currentNum / cards.length) * 100}%`;
+    }
+
+    function flipCard() {
+      const cardElem = document.getElementById('flashcard');
+      isFlipped = !isFlipped;
+      if (isFlipped) {
+        cardElem.classList.add('rotate-y-180');
+      } else {
+        cardElem.classList.remove('rotate-y-180');
+      }
+    }
+
+    function rateCard(rating) {
+      const cards = mockVocab[currentLang];
+      if (!cards || cards.length === 0) return;
+
+      const card = cards[currentCardIndex % cards.length];
+      if (rating === 'easy') {
+        card.box = Math.min(card.box + 1, 5);
+      } else if (rating === 'hard') {
+        card.box = 1;
+      }
+
+      currentCardIndex++;
+      renderCurrentFlashcard();
+      renderWordBank();
+      updateHeaderBadges();
+    }
+
+    function playAudioPrompt() {
+      // Audio cue simulation
+      const card = mockVocab[currentLang][currentCardIndex % mockVocab[currentLang].length];
+      if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(card.word);
+        utterance.lang = currentLang === 'es' ? 'es-ES' : currentLang === 'ja' ? 'ja-JP' : 'fr-FR';
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+
+    // --- VOICE COMPANION LOGIC ---
+    let micRecordingTimer = null;
+
+    function startMicRecording() {
+      document.getElementById('mic-pulse').classList.remove('hidden');
+      document.getElementById('audio-waveform').classList.remove('opacity-40');
+      document.getElementById('companion-status').innerText = 'Listening to your voice...';
+      document.getElementById('mic-instruction').innerText = 'Release to send speech';
+    }
+
+    function stopMicRecording() {
+      document.getElementById('mic-pulse').classList.add('hidden');
+      document.getElementById('audio-waveform').classList.add('opacity-40');
+      document.getElementById('companion-status').innerText = 'Elena is thinking...';
+      document.getElementById('mic-instruction').innerText = 'Hold button to speak with AI';
+
+      // Simulate STT -> LLM -> TTS pipeline response
+      setTimeout(() => {
+        appendUserSpeechBubble("Me gusta practicar idiomas con esta aplicación todos los días.");
+        
+        setTimeout(() => {
+          const persona = companionVoices[currentLang];
+          const randomReply = persona.replies[Math.floor(Math.random() * persona.replies.length)];
+          appendAISpeechBubble(randomReply);
+          document.getElementById('companion-status').innerText = 'Ready to speak';
+        }, 1000);
+
+      }, 600);
+    }
+
+    function appendUserSpeechBubble(text) {
+      const stream = document.getElementById('chat-stream-box');
+      const bubble = document.createElement('div');
+      bubble.className = "flex flex-col space-y-1 items-end";
+      bubble.innerHTML = `
+        <div class="max-w-[85%] p-3 rounded-2xl rounded-tr-sm bg-stitch-600 text-xs text-white leading-relaxed shadow-sm">
+          ${text}
+        </div>
+        <span class="text-[9px] text-slate-400 px-1">You • Speech Transcribed</span>
+      `;
+      stream.appendChild(bubble);
+      stream.scrollTop = stream.scrollHeight;
+    }
+
+    function appendAISpeechBubble(text) {
+      const stream = document.getElementById('chat-stream-box');
+      const bubble = document.createElement('div');
+      bubble.className = "flex flex-col space-y-1";
+      bubble.innerHTML = `
+        <div class="max-w-[85%] self-start p-3 rounded-2xl rounded-tl-sm bg-slate-800 border border-slate-700/60 text-xs text-slate-200 leading-relaxed shadow-sm">
+          ${text}
+        </div>
+        <span class="text-[9px] text-slate-400 self-start px-1">Subtitles • Target Language</span>
+      `;
+      stream.appendChild(bubble);
+      stream.scrollTop = stream.scrollHeight;
+
+      // TTS voice playback simulation
+      if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = currentLang === 'es' ? 'es-ES' : currentLang === 'ja' ? 'ja-JP' : 'fr-FR';
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+
+    function clearVoiceChat() {
+      const persona = companionVoices[currentLang];
+      document.getElementById('chat-stream-box').innerHTML = `
+        <div class="flex flex-col space-y-1">
+          <div class="max-w-[85%] self-start p-3 rounded-2xl rounded-tl-sm bg-slate-800 border border-slate-700/60 text-xs text-slate-200 leading-relaxed shadow-sm">
+            <span>${persona.welcome}</span>
+          </div>
+          <span class="text-[9px] text-slate-400 self-start px-1">Subtitles • Target Language</span>
+        </div>
+      `;
+    }
+
+    // --- JOURNAL LOGIC ---
+    function runGrammarCheck() {
+      const text = document.getElementById('journal-input').value.trim();
+      const panel = document.getElementById('journal-feedback-panel');
+      const list = document.getElementById('grammar-corrections-list');
+
+      if (!text) {
+        list.innerHTML = `<p class="text-amber-400">Please write a few sentences first to analyze grammar.</p>`;
+        panel.classList.remove('hidden');
+        return;
+      }
+
+      list.innerHTML = `
+        <p class="text-slate-300"><strong class="text-stitch-400">Great phrasing!</strong> Your usage of sentence transitions is clear.</p>
+        <p class="text-slate-400 text-[11px]"><strong class="text-emerald-400">Suggestion:</strong> Try replacing common verbs with higher-level descriptors to advance your level.</p>
+      `;
+      panel.classList.remove('hidden');
+    }
+
+    function extractAndSaveJournalWords() {
+      const words = mockVocab[currentLang];
+      words.push({
+        id: `${currentLang}-${Date.now()}`,
+        word: 'Constancia',
+        phonetic: '[cons-tan-cia]',
+        translation: 'Consistency / Perseverance',
+        example: 'La constancia me ayuda a aprender.',
+        box: 1
+      });
+      renderWordBank();
+      alert('Word "Constancia" extracted and added to your Word Bank!');
+    }
+
+    // --- WORD BANK LOGIC ---
+    function renderWordBank() {
+      const container = document.getElementById('word-list-container');
+      const words = mockVocab[currentLang] || [];
+      container.innerHTML = '';
+
+      if (words.length === 0) {
+        container.innerHTML = `<p class="text-xs text-slate-500 text-center py-8">No words saved in this language yet.</p>`;
+        return;
+      }
+
+      words.forEach(item => {
+        const card = document.createElement('div');
+        card.className = "p-3 bg-slate-900 border border-slate-800 rounded-2xl flex items-center justify-between hover:border-slate-700 transition-all";
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center space-x-2">
+              <h4 class="text-xs font-bold text-slate-100">${item.word}</h4>
+              <span class="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700/50">${item.phonetic || ''}</span>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-0.5">${item.translation}</p>
+          </div>
+          <div class="flex items-center space-x-2">
+            <span class="text-[10px] font-semibold px-2 py-1 rounded-lg bg-stitch-500/10 text-stitch-300 border border-stitch-500/20">Box ${item.box}</span>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function filterWordBank() {
+      const query = document.getElementById('word-search').value.toLowerCase();
+      const items = document.querySelectorAll('#word-list-container > div');
+      items.forEach(item => {
+        const text = item.innerText.toLowerCase();
+        item.style.display = text.includes(query) ? 'flex' : 'none';
+      });
+    }
+
+    function openAddWordModal() {
+      document.getElementById('add-word-modal').classList.remove('hidden');
+    }
+
+    function closeAddWordModal() {
+      document.getElementById('add-word-modal').classList.add('hidden');
+    }
+
+    function saveNewWord() {
+      const word = document.getElementById('new-word-input').value.trim();
+      const translation = document.getElementById('new-translation-input').value.trim();
+
+      if (word && translation) {
+        mockVocab[currentLang].push({
+          id: `${currentLang}-${Date.now()}`,
+          word: word,
+          phonetic: '[custom]',
+          translation: translation,
+          example: 'User created vocabulary item.',
+          box: 1
+        });
+        document.getElementById('new-word-input').value = '';
+        document.getElementById('new-translation-input').value = '';
+        closeAddWordModal();
+        renderWordBank();
+        updateHeaderBadges();
+      }
+    }
+
+    function updateHeaderBadges() {
+      const words = mockVocab[currentLang] || [];
+      const mastered = words.filter(w => w.box >= 3).length;
+      document.getElementById('words-mastered').innerText = mastered;
+    }
+
+    // --- TAB NAVIGATION SYSTEM ---
+    function switchTab(tab) {
+      currentTab = tab;
+
+      // Hide all view sections
+      document.getElementById('view-flashcards').classList.add('hidden');
+      document.getElementById('view-voice').classList.add('hidden');
+      document.getElementById('view-journal').classList.add('hidden');
+      document.getElementById('view-wordbank').classList.add('hidden');
+
+      // Reset Nav Button Styles
+      ['flashcards', 'voice', 'journal', 'wordbank'].forEach(t => {
+        const btn = document.getElementById(`nav-${t}`);
+        btn.classList.remove('text-stitch-500');
+        btn.classList.add('text-slate-400');
+      });
+
+      // Show Selected View
+      document.getElementById(`view-${tab}`).classList.remove('hidden');
+      const activeBtn = document.getElementById(`nav-${tab}`);
+      activeBtn.classList.remove('text-slate-400');
+      activeBtn.classList.add('text-stitch-500');
+    }
+  </script>
+</body>
+</html>
